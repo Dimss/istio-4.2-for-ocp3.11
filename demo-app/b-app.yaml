@@ -1,0 +1,161 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "chuck-api"
+  namespace: chuck
+spec:
+  selector:
+    app: "chuck-api"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: chuck-api
+  namespace: chuck
+spec:
+  tls:
+    termination: edge
+  # host: chuck-api.devinfra-b.resource.bank
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: chuck-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "chuck-ui"
+  namespace: chuck
+spec:
+  selector:
+    app: "chuck-ui"
+  ports:
+  - name: http
+    port: 3000
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: chuck-ui
+  namespace: chuck
+spec:
+  tls: 
+    termination: edge
+  # host: chuck-ui.devinfra-b.resource.bank
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: chuck-ui
+---
+kind: DeploymentConfig
+apiVersion: "v1"
+metadata:
+  labels:
+    app: "chuck-ui"
+  name: "chuck-ui"
+  namespace: chuck
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: "chuck-ui"
+        version: v1
+    spec:
+      containers:
+      - name: "chuck-ui"
+        image: "dimssss/check-ui:1.0.0"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: API_URL
+          value: "https://chuck-api-chuck.devcloudapps02.poalim.bank"
+---
+kind: DeploymentConfig
+apiVersion: "v1"
+metadata:
+  labels:
+    app: "chuck-api"
+  name: "chuck-api"
+  namespace: chuck
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: "chuck-api"
+        version: v1
+    spec:
+      containers:
+      - name: "chuck-api"
+        image: "dimssss/check-api:1.0.0"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        - name: DB_HOST
+          value: "chuck-db"
+        - name: DB_NAME
+          value: "chuck"
+        - name: DB_USER
+          value: "chuck"
+        - name: DB_PASS
+          value: "chuck"
+---
+kind: DeploymentConfig
+apiVersion: "v1"
+metadata:
+  labels:
+    app: "chuck-db"
+  name: "chuck-db"
+  namespace: chuck
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: "chuck-db"
+        version: v1
+    spec:
+      containers:
+      - name: "chuck-db"
+        image: "/mysql:5.7.24"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_USER
+          value: chuck
+        - name: MYSQL_PASSWORD
+          value: "chuck"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "chuck"
+        - name: MYSQL_DATABASE
+          value: "chuck"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "chuck-db"
+  namespace: chuck
+spec:
+  selector:
+    app: "chuck-db"
+  ports:
+  - name: http
+    port: 3306
