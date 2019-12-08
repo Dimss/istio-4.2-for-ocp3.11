@@ -1,0 +1,84 @@
+apiVersion: maistra.io/v1
+kind: ServiceMeshControlPlane
+metadata:
+  name: full-install
+  namespace: istio-system
+spec:
+
+  istio:
+    global:
+      hub: "docker-ext.artifactory.resource/dimssss/openshift-service-mesh"
+      tag: 1.0.0
+      oauthproxy:
+        hub: "docker-ext.artifactory.resource"
+        image: "dimssss/ose-oauth-proxy"
+        tag: "4.1"
+      defaultResources:
+        requests:
+          cpu: 10m
+          memory: 128Mi
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      proxy:
+        # constrain resources for use in smaller environments
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 128Mi
+
+    gateways:
+      istio-egressgateway:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+      istio-ingressgateway:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+
+    mixer:
+      policy:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+
+      telemetry:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+        # constrain resources for use in smaller environments
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1G
+          limits:
+            cpu: 500m
+            memory: 4G
+
+    pilot:
+      # disable autoscaling for use in smaller environments
+      autoscaleEnabled: false
+      # increase random sampling rate for development/testing
+      traceSampling: 100.0
+
+    kiali:
+      # change to false to disable kiali
+      enabled: true
+      hub: "docker-ext.artifactory.resource"
+      image: "dimssss/service-mesh/kiali-rhel7"
+      tag: "1.0.6"
+    
+    tracing:
+      # change to false to disable tracing (i.e. jaeger)
+      enabled: true
+      jaeger:
+        # simple, all-in-one strategy
+        template: all-in-one
+        hub: "docker-ext.artifactory.resource"
+        allInOneImage: "dimssss/jaeger-all-in-one-rhel7"
+        tag: "1.13.1"
+
+        # production strategy, utilizing elasticsearch
+        #template: production-elasticsearch
+        # if required. only one instance may use agentStrategy=DaemonSet
+        #agentStrategy: DaemonSet
