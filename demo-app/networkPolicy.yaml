@@ -7,5 +7,21 @@ spec:
   ingress:
   - from:
     - namespaceSelector: {}
+  podSelector: {}
   policyTypes:
   - Ingress
+  ---
+  apiVersion: extensions/v1beta1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-from-default-namespace
+    namespace: chuck
+  spec:
+    ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: default
+    podSelector: {}
+    policyTypes:
+    - Ingress
