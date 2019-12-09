@@ -4,7 +4,7 @@ metadata:
   name: chuck-api
   namespace: chuck
 spec:
-  host: chuck-api
+  host: chuck-api.chuck.svc.cluster.local
   subsets:
   - name: v1
     labels:
@@ -17,11 +17,11 @@ metadata:
   namespace: "chuck"
 spec:
   hosts:
-  - chuck-api
+  - chuck-api.chuck.svc.cluster.local
   http:
   - route:
     - destination:
-        host: chuck-api
+        host: chuck-api.chuck.svc.cluster.local
         subset: v1
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -30,7 +30,7 @@ metadata:
   name: chuck-ui
   namespace: chuck
 spec:
-  host: chuck-ui
+  host: chuck-ui.chuck.svc.cluster.local
   subsets:
   - name: v1
     labels:
@@ -43,34 +43,37 @@ metadata:
   namespace: "chuck"
 spec:
   hosts:
-  - chuck-ui
+  - chuck-ui.chuck.svc.cluster.local
   http:
   - route:
     - destination:
-        host: chuck-ui
+        host: chuck-ui.chuck.svc.cluster.local
         subset: v1
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: mysql-db
+  name: chuck-db
   namespace: chuck
 spec:
-  host: mysql-db
+  host: chuck-db.chuck.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: mysql-db
+  name: chuck-db
   namespace: "chuck"
 spec:
   hosts:
-  - mysql-db
+  - chuck-db.chuck.svc.cluster.local
   tcp:
   - match:
     - port: 3306
     route:
     - destination:
-        host: mysql-db
+        host: chuck-db.chuck.svc.cluster.local
         port:
           number: 3306

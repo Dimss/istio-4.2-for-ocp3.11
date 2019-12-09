@@ -44,7 +44,7 @@ metadata:
   name: chuck-ui
   namespace: chuck
 spec:
-  tls: 
+  tls:
     termination: edge
   # host: chuck-ui.devinfra-b.resource.bank
   port:
@@ -72,13 +72,13 @@ spec:
     spec:
       containers:
       - name: "chuck-ui"
-        image: "dimssss/check-ui:1.0.0"
+        image: "docker.io/dimssss/chuck-ui:latest"
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
         env:
         - name: API_URL
-          value: "https://chuck-api-chuck.devcloudapps02.poalim.bank"
+          value: "asd"
 ---
 kind: DeploymentConfig
 apiVersion: "v1"
@@ -99,7 +99,7 @@ spec:
     spec:
       containers:
       - name: "chuck-api"
-        image: "dimssss/check-api:1.0.0"
+        image: "docker.io/dimssss/chuck-api:latest"
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -134,7 +134,7 @@ spec:
     spec:
       containers:
       - name: "chuck-db"
-        image: "/mysql:5.7.24"
+        image: "registry.redhat.io/rhscl/mysql-57-rhel7"
         imagePullPolicy: Always
         ports:
         - containerPort: 3306
@@ -157,5 +157,5 @@ spec:
   selector:
     app: "chuck-db"
   ports:
-  - name: http
+  - name: mysql
     port: 3306
